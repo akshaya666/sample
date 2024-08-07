@@ -4,125 +4,103 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Quick Search</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='quick_search.css') }}">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
-  <div class="container">
-    <h1>Quick Search</h1>
-    <div class="chat-container">
-      <div class="chat-header">
-        <select id="documentSelect">
-          <option value="doc1">Document 1</option>
-          <option value="doc2">Document 2</option>
-        </select>
-      </div>
-      <div class="chat-messages" id="chatMessages"></div>
-      <div class="chat-input">
-        <input type="text" id="userInput" placeholder="Type your message...">
-        <button id="sendButton"><i class="fas fa-paper-plane"></i></button>
-      </div>
-      <div class="feedback">
-        <button id="thumbsUp"><i class="fas fa-thumbs-up"></i></button>
-        <button id="thumbsDown"><i class="fas fa-thumbs-down"></i></button>
-      </div>
+<div class="container">
+  <a href="{{ url_for('home') }}" class="menu-link">
+    <i class="fas fa-arrow-left"></i> Main Menu
+  </a>
+  <h1>Quick Search</h1>
+  <div class="chat-container">
+    <div class="chat-box" id="chat-box">
+      <!-- Chat messages will be appended here -->
+    </div>
+    <select id="document-select">
+      <option value="doc1">Document 1</option>
+      <option value="doc2">Document 2</option>
+      <option value="doc3">Document 3</option>
+    </select>
+    <div class="input-container">
+      <input type="text" id="user-input" placeholder="Ask a question...">
+      <button id="send-button" disabled>Send</button>
+    </div>
+    <div class="feedback-container">
+      <i class="fas fa-thumbs-up" id="thumbs-up"></i>
+      <i class="fas fa-thumbs-down" id="thumbs-down"></i>
     </div>
   </div>
+</div>
+<script>
+  const userInput = document.getElementById('user-input');
+  const sendButton = document.getElementById('send-button');
+  const chatBox = document.getElementById('chat-box');
+  const thumbsUp = document.getElementById('thumbs-up');
+  const thumbsDown = document.getElementById('thumbs-down');
+  let lastUserMessage = '';
 
-  <script>
-    document.getElementById('sendButton').addEventListener('click', function() {
-      const userInput = document.getElementById('userInput').value;
-      if (userInput.trim() !== '') {
-        const chatMessages = document.getElementById('chatMessages');
-        const userMessageDiv = document.createElement('div');
-        userMessageDiv.className = 'user-message';
-        userMessageDiv.textContent = userInput;
-        chatMessages.appendChild(userMessageDiv);
-        
-        document.getElementById('userInput').value = '';
+  userInput.addEventListener('input', () => {
+    sendButton.disabled = !userInput.value.trim();
+  });
 
-        // Display loader
-        const loaderDiv = document.createElement('div');
-        loaderDiv.className = 'loader';
-        chatMessages.appendChild(loaderDiv);
+  sendButton.addEventListener('click', () => {
+    const message = userInput.value.trim();
+    if (message) {
+      appendMessage('user', message);
+      lastUserMessage = message;
+      userInput.value = '';
+      sendButton.disabled = true;
+      fetchBotResponse(message);
+    }
+  });
 
-        // Scroll to bottom
-        chatMessages.scrollTop = chatMessages.scrollHeight;
+  thumbsUp.addEventListener('click', () => {
+    appendMessage('bot', 'Happy to help');
+  });
 
-        fetch('/api/chat', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ message: userInput })
-        })
-        .then(response => response.json())
-        .then(data => {
-          loaderDiv.remove();
-          const botMessageDiv = document.createElement('div');
-          botMessageDiv.className = 'bot-message';
-          botMessageDiv.textContent = data.message;
-          
-          // Add copy icon
-          const copyIcon = document.createElement('i');
-          copyIcon.className = 'fas fa-copy';
-          copyIcon.onclick = function() {
-            navigator.clipboard.writeText(data.message);
-          };
-          botMessageDiv.appendChild(copyIcon);
+  thumbsDown.addEventListener('click', () => {
+    appendMessage('bot', 'Looks like you are not happy with the response');
+    fetchBotResponse(lastUserMessage);
+  });
 
-          chatMessages.appendChild(botMessageDiv);
-          chatMessages.scrollTop = chatMessages.scrollHeight;
-        });
+  function appendMessage(sender, message) {
+    const messageElem = document.createElement('div');
+    messageElem.className = `message ${sender}`;
+    messageElem.textContent = message;
+    if (sender === 'bot') {
+      const copyIcon = document.createElement('i');
+      copyIcon.className = 'fas fa-copy';
+      copyIcon.onclick = () => {
+        navigator.clipboard.writeText(message);
+      };
+      messageElem.appendChild(copyIcon);
+    }
+    chatBox.appendChild(messageElem);
+    chatBox.scrollTop = chatBox.scrollHeight;
+  }
+
+  function fetchBotResponse(message) {
+    appendMessage('bot', '...');
+    fetch('/api/chat', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ message })
+    })
+    .then(response => response.json())
+    .then(data => {
+      const lastBotMessage = document.querySelector('.message.bot:last-child');
+      if (lastBotMessage && lastBotMessage.textContent === '...') {
+        lastBotMessage.remove();
       }
+      appendMessage('bot', data.message);
+    })
+    .catch(error => {
+      console.error('Error:', error);
     });
-
-    document.getElementById('thumbsUp').addEventListener('click', function() {
-      const chatMessages = document.getElementById('chatMessages');
-      const botMessageDiv = document.createElement('div');
-      botMessageDiv.className = 'bot-message';
-      botMessageDiv.textContent = 'Happy to help';
-      chatMessages.appendChild(botMessageDiv);
-    });
-
-    document.getElementById('thumbsDown').addEventListener('click', function() {
-      const chatMessages = document.getElementById('chatMessages');
-      const botMessageDiv = document.createElement('div');
-      botMessageDiv.className = 'bot-message';
-      botMessageDiv.textContent = 'Looks like you are not happy with the response';
-      chatMessages.appendChild(botMessageDiv);
-
-      // Regenerate response
-      const lastUserMessage = document.querySelector('.user-message:last-child');
-      if (lastUserMessage) {
-        const userMessage = lastUserMessage.textContent;
-
-        fetch('/api/chat', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ message: userMessage })
-        })
-        .then(response => response.json())
-        .then(data => {
-          const newBotMessageDiv = document.createElement('div');
-          newBotMessageDiv.className = 'bot-message';
-          newBotMessageDiv.textContent = data.message;
-          
-          // Add copy icon
-          const copyIcon = document.createElement('i');
-          copyIcon.className = 'fas fa-copy';
-          copyIcon.onclick = function() {
-            navigator.clipboard.writeText(data.message);
-          };
-          newBotMessageDiv.appendChild(copyIcon);
-
-          chatMessages.appendChild(newBotMessageDiv);
-          chatMessages.scrollTop = chatMessages.scrollHeight;
-        });
-      }
-    });
-  </script>
+  }
+</script>
 </body>
 </html>
