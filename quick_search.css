@@ -34,6 +34,13 @@ h1 {
     margin-bottom: 20px;
 }
 
+.document-label {
+    display: block;
+    margin-bottom: 10px;
+    font-size: 18px;
+    color: rgba(0, 71, 123, 1);
+}
+
 .document-select {
     width: 100%;
     padding: 10px;
