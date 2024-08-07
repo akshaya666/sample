@@ -67,6 +67,7 @@ h1 {
     overflow-y: auto;
     border: 1px solid rgba(0, 71, 123, 1);
     margin-bottom: 10px;
+    max-height: 60vh; /* Adjust the max-height as necessary */
 }
 
 .message {
