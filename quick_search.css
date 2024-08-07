@@ -74,28 +74,29 @@ h1 {
 }
 
 .message {
-    margin: 10px 0;
-    padding: 10px 15px; /* Add more padding for better spacing */
+    margin: 10px;
+    padding: 10px 15px;
     border-radius: 10px;
     position: relative;
-    max-width: 60%;  /* Reduce the max width */
+    max-width: 60%;
     word-wrap: break-word;
     display: inline-block;
+    box-sizing: border-box;
 }
 
 .message.user {
     background-color: rgba(0, 71, 123, 0.1);
     text-align: left;
-    align-self: flex-start; /* Align user messages to the left */
+    align-self: flex-end;
 }
 
 .message.bot {
     background-color: rgba(0, 71, 123, 0.2);
     text-align: left;
-    align-self: flex-end; /* Align bot messages to the right */
+    align-self: flex-start;
 }
 
-.message.bot .fas.fa-copy {
+.message .fas.fa-copy {
     position: absolute;
     right: 10px;
     top: 50%;
