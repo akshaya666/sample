@@ -2,7 +2,8 @@ html, body {
     height: 100%;
     width: 100%;
     margin: 0;
-    font-family: Arial, sans-serif;
+    font-family: 'Open Sans', sans-serif;
+    font-size: 16px;
     background-color: white;
     color: rgba(0, 71, 123, 1);
     display: flex;
@@ -20,7 +21,7 @@ html, body {
     border-radius: 10px;
     padding: 20px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    box-sizing: border-box; /* Ensure padding is included in the element's total width and height */
+    box-sizing: border-box;
 }
 
 h1 {
@@ -58,7 +59,7 @@ h1 {
     border-radius: 10px;
     padding: 20px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    box-sizing: border-box; /* Ensure padding is included in the element's total width and height */
+    box-sizing: border-box;
 }
 
 .chat-box {
@@ -69,14 +70,15 @@ h1 {
     overflow-y: auto;
     border: 1px solid rgba(0, 71, 123, 1);
     margin-bottom: 10px;
-    max-height: calc(100vh - 200px); /* Adjust height relative to the viewport */
+    max-height: calc(100vh - 200px);
 }
 
 .message {
-    margin: 10px 0;
+    margin: 10px auto;
     padding: 10px;
     border-radius: 10px;
     position: relative;
+    max-width: 80%;
 }
 
 .message.user {
