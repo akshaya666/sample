@@ -26,9 +26,9 @@ def chat():
             max_tokens=150
         )
         bot_message = response.choices[0].text.strip()
-        return jsonify({"message": bot_message})
+        return jsonify({'message': bot_message})
 
-    return jsonify({"message": "No message provided"}), 400
+    return jsonify({'message': 'No message received'}), 400
 
 if __name__ == '__main__':
     app.run(debug=True)
