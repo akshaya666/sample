@@ -11,45 +11,93 @@ body {
     margin: 0 auto;
 }
 
-h1 {
-    margin-bottom: 50px;
-    color: rgba(0, 71, 123, 1);
+.header {
+    text-align: left;
+    margin-bottom: 20px;
 }
 
-.menu {
-    display: flex;
-    justify-content: space-around;
-    flex-wrap: wrap;
+.home-link {
+    color: rgba(0, 71, 123, 1);
+    text-decoration: none;
+    font-size: 18px;
 }
 
-.menu-item {
-    background-color: white;
-    color: rgba(0, 71, 123, 1);
+.upload-section {
     border: 2px solid rgba(0, 71, 123, 1);
+    padding: 30px;
     border-radius: 10px;
-    padding: 20px;
-    width: 180px;
-    margin: 10px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    transition: transform 0.3s;
-    text-align: center;
+    background-color: rgba(0, 71, 123, 0.1);
+    margin-bottom: 50px;
 }
 
-.menu-item:hover {
-    transform: scale(1.1);
-}
-
-.menu-item i {
+.upload-icon {
     font-size: 50px;
+    color: rgba(0, 71, 123, 1);
+    margin-bottom: 20px;
+}
+
+.upload-section h1 {
     margin-bottom: 10px;
+}
+
+.upload-section p {
+    margin-bottom: 20px;
     color: rgba(0, 71, 123, 1);
 }
 
-.menu-item h2 {
+#file-upload {
+    display: inline-block;
     margin-bottom: 10px;
 }
 
-.menu-item p {
-    font-size: 14px;
-    color: grey;
+button {
+    background-color: rgba(0, 71, 123, 1);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+button:hover {
+    background-color: grey;
+}
+
+.flash {
+    color: green;
+    margin-bottom: 20px;
+}
+
+.documents-section {
+    text-align: left;
+}
+
+.documents-section h2 {
+    color: rgba(0, 71, 123, 1);
+}
+
+.documents-section p {
+    color: rgba(0, 71, 123, 1);
+    margin-bottom: 20px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+th, td {
+    border: 1px solid rgba(0, 71, 123, 1);
+    padding: 10px;
+    text-align: left;
+}
+
+th {
+    background-color: rgba(0, 71, 123, 1);
+    color: white;
+}
+
+td {
+    background-color: lightgrey;
 }
