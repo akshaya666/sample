@@ -65,12 +65,12 @@
   });
 
   thumbsUp.addEventListener('click', () => {
-    appendMessage('bot', 'Happy to help');
+    appendMessage('bot', 'Happy to help', true);
     disableFeedback();
   });
 
   thumbsDown.addEventListener('click', () => {
-    appendMessage('bot', 'Looks like you are not happy with the response');
+    appendMessage('bot', 'Looks like you are not happy with the response', true);
     fetchBotResponse(lastUserMessage);
     disableFeedback();
   });
@@ -93,11 +93,11 @@
     });
   });
 
-  function appendMessage(sender, message) {
+  function appendMessage(sender, message, isFeedback = false) {
     const messageElem = document.createElement('div');
     messageElem.className = `message ${sender}`;
     messageElem.textContent = message;
-    if (sender === 'bot') {
+    if (sender === 'bot' && !isFeedback) {
       const copyIcon = document.createElement('i');
       copyIcon.className = 'fas fa-copy';
       copyIcon.onclick = () => {
@@ -146,5 +146,6 @@
     thumbsDown.style.color = 'grey';
   }
 </script>
+
 </body>
 </html>
