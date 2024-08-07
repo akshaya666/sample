@@ -27,8 +27,8 @@
       <button id="send-button" disabled>Send</button>
     </div>
     <div class="feedback-container">
-      <i class="fas fa-thumbs-up" id="thumbs-up"></i>
-      <i class="fas fa-thumbs-down" id="thumbs-down"></i>
+      <i class="fas fa-thumbs-up" id="thumbs-up" disabled></i>
+      <i class="fas fa-thumbs-down" id="thumbs-down" disabled></i>
     </div>
   </div>
 </div>
@@ -42,6 +42,14 @@
 
   userInput.addEventListener('input', () => {
     sendButton.disabled = !userInput.value.trim();
+    thumbsUp.disabled = !userInput.value.trim();
+    thumbsDown.disabled = !userInput.value.trim();
+  });
+
+  userInput.addEventListener('keypress', (event) => {
+    if (event.key === 'Enter' && !sendButton.disabled) {
+      sendButton.click();
+    }
   });
 
   sendButton.addEventListener('click', () => {
@@ -57,11 +65,15 @@
 
   thumbsUp.addEventListener('click', () => {
     appendMessage('bot', 'Happy to help');
+    thumbsUp.disabled = true;
+    thumbsDown.disabled = true;
   });
 
   thumbsDown.addEventListener('click', () => {
     appendMessage('bot', 'Looks like you are not happy with the response');
     fetchBotResponse(lastUserMessage);
+    thumbsUp.disabled = true;
+    thumbsDown.disabled = true;
   });
 
   function appendMessage(sender, message) {
@@ -96,6 +108,8 @@
         lastBotMessage.remove();
       }
       appendMessage('bot', data.message);
+      thumbsUp.disabled = false;
+      thumbsDown.disabled = false;
     })
     .catch(error => {
       console.error('Error:', error);
