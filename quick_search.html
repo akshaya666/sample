@@ -27,8 +27,8 @@
       <button id="send-button" disabled>Send</button>
     </div>
     <div class="feedback-container">
-      <i class="fas fa-thumbs-up" id="thumbs-up" disabled></i>
-      <i class="fas fa-thumbs-down" id="thumbs-down" disabled></i>
+      <i class="fas fa-thumbs-up" id="thumbs-up" style="pointer-events: none; color: grey;"></i>
+      <i class="fas fa-thumbs-down" id="thumbs-down" style="pointer-events: none; color: grey;"></i>
     </div>
   </div>
 </div>
@@ -42,8 +42,6 @@
 
   userInput.addEventListener('input', () => {
     sendButton.disabled = !userInput.value.trim();
-    thumbsUp.disabled = !userInput.value.trim();
-    thumbsDown.disabled = !userInput.value.trim();
   });
 
   userInput.addEventListener('keypress', (event) => {
@@ -65,15 +63,13 @@
 
   thumbsUp.addEventListener('click', () => {
     appendMessage('bot', 'Happy to help');
-    thumbsUp.disabled = true;
-    thumbsDown.disabled = true;
+    disableFeedback();
   });
 
   thumbsDown.addEventListener('click', () => {
     appendMessage('bot', 'Looks like you are not happy with the response');
     fetchBotResponse(lastUserMessage);
-    thumbsUp.disabled = true;
-    thumbsDown.disabled = true;
+    disableFeedback();
   });
 
   function appendMessage(sender, message) {
@@ -108,12 +104,25 @@
         lastBotMessage.remove();
       }
       appendMessage('bot', data.message);
-      thumbsUp.disabled = false;
-      thumbsDown.disabled = false;
+      enableFeedback();
     })
     .catch(error => {
       console.error('Error:', error);
     });
+  }
+
+  function enableFeedback() {
+    thumbsUp.style.pointerEvents = 'auto';
+    thumbsUp.style.color = 'rgba(0, 71, 123, 1)';
+    thumbsDown.style.pointerEvents = 'auto';
+    thumbsDown.style.color = 'rgba(0, 71, 123, 1)';
+  }
+
+  function disableFeedback() {
+    thumbsUp.style.pointerEvents = 'none';
+    thumbsUp.style.color = 'grey';
+    thumbsDown.style.pointerEvents = 'none';
+    thumbsDown.style.color = 'grey';
   }
 </script>
 </body>
