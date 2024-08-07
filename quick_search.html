@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quick Search</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+  <div class="container">
+    <h1>Quick Search</h1>
+    <div class="chat-container">
+      <div class="chat-header">
+        <select id="documentSelect">
+          <option value="doc1">Document 1</option>
+          <option value="doc2">Document 2</option>
+        </select>
+      </div>
+      <div class="chat-messages" id="chatMessages"></div>
+      <div class="chat-input">
+        <input type="text" id="userInput" placeholder="Type your message...">
+        <button id="sendButton"><i class="fas fa-paper-plane"></i></button>
+      </div>
+      <div class="feedback">
+        <button id="thumbsUp"><i class="fas fa-thumbs-up"></i></button>
+        <button id="thumbsDown"><i class="fas fa-thumbs-down"></i></button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById('sendButton').addEventListener('click', function() {
+      const userInput = document.getElementById('userInput').value;
+      if (userInput.trim() !== '') {
+        const chatMessages = document.getElementById('chatMessages');
+        const userMessageDiv = document.createElement('div');
+        userMessageDiv.className = 'user-message';
+        userMessageDiv.textContent = userInput;
+        chatMessages.appendChild(userMessageDiv);
+        
+        document.getElementById('userInput').value = '';
+
+        // Display loader
+        const loaderDiv = document.createElement('div');
+        loaderDiv.className = 'loader';
+        chatMessages.appendChild(loaderDiv);
+
+        // Scroll to bottom
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+
+        fetch('/api/chat', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ message: userInput })
+        })
+        .then(response => response.json())
+        .then(data => {
+          loaderDiv.remove();
+          const botMessageDiv = document.createElement('div');
+          botMessageDiv.className = 'bot-message';
+          botMessageDiv.textContent = data.message;
+          
+          // Add copy icon
+          const copyIcon = document.createElement('i');
+          copyIcon.className = 'fas fa-copy';
+          copyIcon.onclick = function() {
+            navigator.clipboard.writeText(data.message);
+          };
+          botMessageDiv.appendChild(copyIcon);
+
+          chatMessages.appendChild(botMessageDiv);
+          chatMessages.scrollTop = chatMessages.scrollHeight;
+        });
+      }
+    });
+
+    document.getElementById('thumbsUp').addEventListener('click', function() {
+      const chatMessages = document.getElementById('chatMessages');
+      const botMessageDiv = document.createElement('div');
+      botMessageDiv.className = 'bot-message';
+      botMessageDiv.textContent = 'Happy to help';
+      chatMessages.appendChild(botMessageDiv);
+    });
+
+    document.getElementById('thumbsDown').addEventListener('click', function() {
+      const chatMessages = document.getElementById('chatMessages');
+      const botMessageDiv = document.createElement('div');
+      botMessageDiv.className = 'bot-message';
+      botMessageDiv.textContent = 'Looks like you are not happy with the response';
+      chatMessages.appendChild(botMessageDiv);
+
+      // Regenerate response
+      const lastUserMessage = document.querySelector('.user-message:last-child');
+      if (lastUserMessage) {
+        const userMessage = lastUserMessage.textContent;
+
+        fetch('/api/chat', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ message: userMessage })
+        })
+        .then(response => response.json())
+        .then(data => {
+          const newBotMessageDiv = document.createElement('div');
+          newBotMessageDiv.className = 'bot-message';
+          newBotMessageDiv.textContent = data.message;
+          
+          // Add copy icon
+          const copyIcon = document.createElement('i');
+          copyIcon.className = 'fas fa-copy';
+          copyIcon.onclick = function() {
+            navigator.clipboard.writeText(data.message);
+          };
+          newBotMessageDiv.appendChild(copyIcon);
+
+          chatMessages.appendChild(newBotMessageDiv);
+          chatMessages.scrollTop = chatMessages.scrollHeight;
+        });
+      }
+    });
+  </script>
+</body>
+</html>
