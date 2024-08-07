@@ -13,10 +13,11 @@
     <i class="fas fa-arrow-left"></i> Main Menu
   </a>
   <h1>Quick Search</h1>
-  <select id="document-select" class="document-select">
-    <option value="doc1">Document 1</option>
-    <option value="doc2">Document 2</option>
-    <option value="doc3">Document 3</option>
+  <label for="document-select" class="document-label">Select Document</label>
+  <select id="document-select" name="document" class="document-select">
+    {% for document in documents %}
+    <option value="{{ document }}" {% if document == selected_document %}selected{% endif %}>{{ document }}</option>
+    {% endfor %}
   </select>
   <div class="chat-container">
     <div class="chat-box" id="chat-box">
@@ -38,6 +39,7 @@
   const chatBox = document.getElementById('chat-box');
   const thumbsUp = document.getElementById('thumbs-up');
   const thumbsDown = document.getElementById('thumbs-down');
+  const documentSelect = document.getElementById('document-select');
   let lastUserMessage = '';
 
   userInput.addEventListener('input', () => {
@@ -70,6 +72,24 @@
     appendMessage('bot', 'Looks like you are not happy with the response');
     fetchBotResponse(lastUserMessage);
     disableFeedback();
+  });
+
+  documentSelect.addEventListener('change', () => {
+    const selectedDocument = documentSelect.value;
+    fetch('/api/select_document', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ document: selectedDocument })
+    })
+    .then(response => response.json())
+    .then(data => {
+      console.log(data.message);
+    })
+    .catch(error => {
+      console.error('Error:', error);
+    });
   });
 
   function appendMessage(sender, message) {
