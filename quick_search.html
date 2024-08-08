@@ -10,12 +10,12 @@
 </head>
 <body>
 <div class="header">
-  <h1>My Application</h1>
+  <h5>My Application</h5>
 </div>
+<a href="{{ url_for('home') }}" class="menu-link">
+  <i class="fas fa-arrow-left"></i> Main Menu
+</a>
 <div class="container">
-  <a href="{{ url_for('home') }}" class="menu-link">
-    <i class="fas fa-arrow-left"></i> Main Menu
-  </a>
   <h2>Quick Search</h2>
   <label for="document-select" class="document-label">Select Document</label>
   <select id="document-select" name="document" class="document-select">
