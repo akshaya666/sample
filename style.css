@@ -1,92 +1,70 @@
 body {
-    font-family: Arial, sans-serif;
+    font-family: 'Open Sans', sans-serif;
     background-color: white;
     color: rgba(0, 71, 123, 1);
     text-align: center;
     padding: 50px;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+}
+
+.header {
+    width: 100%;
+    background-color: rgba(0, 71, 123, 1);
+    color: white;
+    padding: 10px 0;
+    text-align: center;
+    font-size: 24px;
+    font-weight: 600;
 }
 
 .container {
-    max-width: 800px;
+    max-width: 1000px;
     margin: 0 auto;
 }
 
 h1 {
-    margin-bottom: 20px;
+    margin-bottom: 50px;
     color: rgba(0, 71, 123, 1);
 }
 
-.chat-container {
-    background-color: rgba(0, 71, 123, 1);
-    color: white;
-    padding: 20px;
-    border-radius: 10px;
+.menu {
+    display: flex;
+    justify-content: space-around;
+    flex-wrap: wrap;
 }
 
-.chat-header {
-    margin-bottom: 10px;
-}
-
-.chat-messages {
-    height: 300px;
-    overflow-y: auto;
+.menu-item {
     background-color: white;
     color: rgba(0, 71, 123, 1);
-    padding: 10px;
+    border: 2px solid rgba(0, 71, 123, 1);
     border-radius: 10px;
-    margin-bottom: 10px;
-}
-
-.user-message, .bot-message {
-    margin: 10px 0;
-}
-
-.user-message {
-    text-align: right;
-    color: grey;
-}
-
-.bot-message {
-    text-align: left;
-}
-
-.loader {
+    padding: 20px;
+    width: 180px;
+    margin: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s;
     text-align: center;
 }
 
-.chat-input {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+.menu-item:hover {
+    transform: scale(1.1);
+}
+
+.menu-item i {
+    font-size: 50px;
+    margin-bottom: 10px;
+    color: rgba(0, 71, 123, 1);
+}
+
+.menu-item h2 {
     margin-bottom: 10px;
 }
 
-.chat-input input {
-    flex: 1;
-    padding: 10px;
-    border: 1px solid grey;
-    border-radius: 5px;
-    margin-right: 10px;
-}
-
-.chat-input button {
-    padding: 10px;
-    background-color: grey;
-    color: white;
-    border: none;
-    border-radius: 5px;
-}
-
-.feedback {
-    display: flex;
-    justify-content: space-around;
-}
-
-.feedback button {
-    background-color: rgba(0, 71, 123, 1);
-    color: white;
-    border: none;
-    padding: 10px;
-    border-radius: 50%;
-    cursor: pointer;
+.menu-item p {
+    font-size: 14px;
+    color: grey;
 }
