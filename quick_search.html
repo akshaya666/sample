@@ -57,24 +57,28 @@
     });
   });
 
-  function appendMessage(sender, message, isFeedback = false) {
+  function appendMessage(sender, message, isFeedback = false, isLoader = false) {
     const messageElem = document.createElement('div');
     messageElem.className = `message ${sender}`;
-    messageElem.textContent = message;
-    if (sender === 'bot' && !isFeedback) {
-      const copyIcon = document.createElement('i');
-      copyIcon.className = 'fas fa-copy';
-      copyIcon.onclick = () => {
-        navigator.clipboard.writeText(message);
-      };
-      messageElem.appendChild(copyIcon);
+    if (isLoader) {
+      messageElem.innerHTML = '<div class="loader"></div>';
+    } else {
+      messageElem.textContent = message;
+      if (sender === 'bot' && !isFeedback) {
+        const copyIcon = document.createElement('i');
+        copyIcon.className = 'fas fa-copy';
+        copyIcon.onclick = () => {
+          navigator.clipboard.writeText(message);
+        };
+        messageElem.appendChild(copyIcon);
+      }
     }
     chatBox.appendChild(messageElem);
     chatBox.scrollTop = chatBox.scrollHeight;
   }
 
   function fetchBotResponse(message) {
-    appendMessage('bot', '...');
+    appendMessage('bot', '', false, true);
     fetch('/api/chat', {
       method: 'POST',
       headers: {
@@ -85,7 +89,7 @@
     .then(response => response.json())
     .then(data => {
       const lastBotMessage = document.querySelector('.message.bot:last-child');
-      if (lastBotMessage && lastBotMessage.textContent === '...') {
+      if (lastBotMessage && lastBotMessage.innerHTML.includes('loader')) {
         lastBotMessage.remove();
       }
       appendMessage('bot', data.message);
