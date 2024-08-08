@@ -61,7 +61,7 @@
     const messageElem = document.createElement('div');
     messageElem.className = `message ${sender}`;
     if (isLoader) {
-      messageElem.innerHTML = '<div class="loader"></div>';
+      messageElem.innerHTML = '<div class="dot-loader"><div></div><div></div><div></div></div>';
     } else {
       messageElem.textContent = message;
       if (sender === 'bot' && !isFeedback) {
@@ -89,7 +89,7 @@
     .then(response => response.json())
     .then(data => {
       const lastBotMessage = document.querySelector('.message.bot:last-child');
-      if (lastBotMessage && lastBotMessage.innerHTML.includes('loader')) {
+      if (lastBotMessage && lastBotMessage.innerHTML.includes('dot-loader')) {
         lastBotMessage.remove();
       }
       appendMessage('bot', data.message);
