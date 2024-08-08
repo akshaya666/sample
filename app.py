@@ -1,46 +1,76 @@
-from flask import Flask, render_template, request, jsonify, session
-import openai
+import os
+import pandas as pd
+import boto3
+from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
+from io import StringIO
 
 app = Flask(__name__)
-app.secret_key = 'your_secret_key'  # Replace with your actual secret key
+app.secret_key = 'supersecretkey'
 
-# Initialize OpenAI API key
-openai.api_key = 'your-openai-api-key-here'
+# AWS S3 Configuration
+S3_BUCKET = 'your-s3-bucket-name'
+S3_KEY = 'your-aws-access-key'
+S3_SECRET = 'your-aws-secret-key'
+S3_REGION = 'your-aws-region'
 
-# List of documents
-documents = ["Document 1", "Document 2", "Document 3"]
+s3 = boto3.client(
+    's3',
+    aws_access_key_id=S3_KEY,
+    aws_secret_access_key=S3_SECRET,
+    region_name=S3_REGION
+)
+
+def get_s3_file_url(bucket, filename):
+    return f"https://{bucket}.s3.{S3_REGION}.amazonaws.com/{filename}"
+
+def load_csv_from_s3(bucket, key):
+    try:
+        csv_obj = s3.get_object(Bucket=bucket, Key=key)
+        return pd.read_csv(csv_obj['Body'])
+    except s3.exceptions.NoSuchKey:
+        return pd.DataFrame(columns=['Document Name', 'Date Uploaded', 'Last Updated', 'Owner'])
 
 @app.route('/')
 def home():
     return render_template('index.html')
 
-@app.route('/quick_search')
-def quick_search():
-    selected_document = session.get('selected_document', documents[0])
-    return render_template('quick_search.html', documents=documents, selected_document=selected_document)
+@app.route('/upload')
+def upload():
+    csv_data = load_csv_from_s3(S3_BUCKET, 'documents.csv')
+    return render_template('upload.html', tables=[csv_data.to_html(classes='data', header="true", index=False)])
 
-@app.route('/api/chat', methods=['POST'])
-def chat():
-    data = request.json
-    user_message = data.get('message')
+@app.route('/upload', methods=['POST'])
+def upload_file():
+    if 'file' not in request.files:
+        return jsonify({'message': 'No file part'}), 400
 
-    if user_message:
-        response = openai.Completion.create(
-            engine="text-davinci-003",
-            prompt=user_message,
-            max_tokens=150
-        )
-        bot_message = response.choices[0].text.strip()
-        return jsonify({'message': bot_message})
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify({'message': 'No selected file'}), 400
 
-    return jsonify({'message': 'No message received'}), 400
+    if file:
+        filename = file.filename
+        s3.upload_fileobj(file, S3_BUCKET, filename)
 
-@app.route('/api/select_document', methods=['POST'])
-def select_document():
-    data = request.json
-    selected_document = data.get('document')
-    session['selected_document'] = selected_document
-    return jsonify({'message': 'Document selection updated'})
+        # Update CSV file
+        csv_data = load_csv_from_s3(S3_BUCKET, 'documents.csv')
+
+        # Check if file already exists
+        if filename in csv_data['Document Name'].values:
+            # Update the existing record
+            csv_data.loc[csv_data['Document Name'] == filename, 'Last Updated'] = pd.Timestamp.now()
+        else:
+            # Add new record
+            new_record = {'Document Name': filename, 'Date Uploaded': pd.Timestamp.now(), 'Last Updated': pd.Timestamp.now(), 'Owner': 'OwnerName'}
+            csv_data = csv_data.append(new_record, ignore_index=True)
+
+        # Save updated CSV back to S3
+        csv_buffer = StringIO()
+        csv_data.to_csv(csv_buffer, index=False)
+        s3.put_object(Bucket=S3_BUCKET, Key='documents.csv', Body=csv_buffer.getvalue())
+
+        updated_table_html = csv_data.to_html(classes='data', header="true", index=False)
+        return jsonify({'message': 'File successfully uploaded to S3', 'table': updated_table_html})
 
 if __name__ == '__main__':
     app.run(debug=True)
