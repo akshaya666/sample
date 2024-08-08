@@ -1,3 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quick Search</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='quick_search.css') }}">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&display=swap">
+</head>
+<body>
+<div class="header">
+  <h1>My Application</h1>
+</div>
+<div class="container">
+  <a href="{{ url_for('home') }}" class="menu-link">
+    <i class="fas fa-arrow-left"></i> Main Menu
+  </a>
+  <h2>Quick Search</h2>
+  <label for="document-select" class="document-label">Select Document</label>
+  <select id="document-select" name="document" class="document-select">
+    {% for document in documents %}
+    <option value="{{ document }}" {% if document == selected_document %}selected{% endif %}>{{ document }}</option>
+    {% endfor %}
+  </select>
+  <div class="chat-container">
+    <div class="chat-box" id="chat-box">
+      <!-- Chat messages will be appended here -->
+    </div>
+    <div class="input-container">
+      <input type="text" id="user-input" placeholder="Ask a question...">
+      <button id="send-button" disabled>Send</button>
+    </div>
+    <div class="feedback-container">
+      <i class="fas fa-thumbs-up" id="thumbs-up" style="pointer-events: none; color: grey;"></i>
+      <i class="fas fa-thumbs-down" id="thumbs-down" style="pointer-events: none; color: grey;"></i>
+    </div>
+  </div>
+</div>
 <script>
   const userInput = document.getElementById('user-input');
   const sendButton = document.getElementById('send-button');
@@ -114,3 +153,5 @@
     thumbsDown.style.color = 'grey';
   }
 </script>
+</body>
+</html>
