@@ -43,6 +43,13 @@
             </div>
         </div>
     </div>
-    <script src="{{ url_for('static', filename='scripts.js') }}"></script>
+    <script>
+        document.getElementById('file-upload').addEventListener('change', function(event) {
+            const files = event.target.files;
+            for (let i = 0; i < files.length; i++) {
+                console.log('File:', files[i].name);
+            }
+        });
+    </script>
 </body>
 </html>
