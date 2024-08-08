@@ -28,6 +28,14 @@ html, body {
     height: 50px;  /* Adjust height if necessary */
 }
 
+.menu-link {
+    text-decoration: none;
+    color: rgba(0, 71, 123, 1);
+    display: inline-block;
+    margin: 10px 0 10px 20px; /* Add margin to position it properly */
+    align-self: flex-start;  /* Align to the start of the container */
+}
+
 .container {
     width: 100%;
     max-width: 1200px;
@@ -43,13 +51,6 @@ html, body {
 
 h2 {
     color: rgba(0, 71, 123, 1);
-    margin-bottom: 20px;
-}
-
-.menu-link {
-    text-decoration: none;
-    color: rgba(0, 71, 123, 1);
-    display: inline-block;
     margin-bottom: 20px;
 }
 
