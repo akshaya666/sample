@@ -16,12 +16,12 @@
     </a>
     <div class="container">
         <div class="upload-section">
-            <div class="upload-icon">
+            <div class="upload-icon" id="upload-icon">
                 <i class="fas fa-folder-upload"></i>
             </div>
             <h2>Upload your files</h2>
             <p>Drag and drop your files or choose files</p>
-            <input type="file" id="file-upload" multiple>
+            <input type="file" id="file-upload" multiple style="display: none;">
         </div>
         <div class="documents-section">
             <h2>All documents</h2>
@@ -36,7 +36,7 @@
                             <th>Owner</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody id="document-table-body">
                         <!-- Rows will be populated here -->
                     </tbody>
                 </table>
@@ -44,12 +44,49 @@
         </div>
     </div>
     <script>
+        document.getElementById('upload-icon').addEventListener('click', function() {
+            document.getElementById('file-upload').click();
+        });
+
         document.getElementById('file-upload').addEventListener('change', function(event) {
             const files = event.target.files;
+            const formData = new FormData();
             for (let i = 0; i < files.length; i++) {
-                console.log('File:', files[i].name);
+                formData.append('files', files[i]);
             }
+            fetch('/upload_files', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.message);
+                loadDocuments();
+            })
+            .catch(error => console.error('Error:', error));
         });
+
+        function loadDocuments() {
+            fetch('/api/documents')
+                .then(response => response.json())
+                .then(data => {
+                    const tableBody = document.getElementById('document-table-body');
+                    tableBody.innerHTML = '';
+                    data.forEach(doc => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${doc.name}</td>
+                            <td>${doc.date_uploaded}</td>
+                            <td>${doc.last_updated}</td>
+                            <td>${doc.owner}</td>
+                        `;
+                        tableBody.appendChild(row);
+                    });
+                })
+                .catch(error => console.error('Error:', error));
+        }
+
+        document.addEventListener('DOMContentLoaded', loadDocuments);
     </script>
 </body>
 </html>
