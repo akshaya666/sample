@@ -7,8 +7,19 @@ html, body {
     background-color: white;
     color: rgba(0, 71, 123, 1);
     display: flex;
-    justify-content: center;
+    flex-direction: column;
+    justify-content: flex-start;
     align-items: center;
+}
+
+.header {
+    width: 100%;
+    background-color: rgba(0, 71, 123, 1);
+    color: white;
+    padding: 10px 0;
+    text-align: center;
+    font-size: 24px;
+    font-weight: 600;
 }
 
 .container {
@@ -24,7 +35,7 @@ html, body {
     box-sizing: border-box;
 }
 
-h1 {
+h2 {
     color: rgba(0, 71, 123, 1);
     margin-bottom: 20px;
 }
