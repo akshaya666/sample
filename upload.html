@@ -6,6 +6,7 @@
     <title>Upload Files</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='upload.css') }}">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body>
     <div class="header">
@@ -22,7 +23,10 @@
             <h2>Upload your files</h2>
             <p>Drag and drop your files or choose files</p>
             <input type="file" id="file-upload" multiple style="display: none;">
+            <div id="selected-files"></div>
+            <button id="upload-button" style="display: none;">Upload</button>
         </div>
+        <div id="flash-messages"></div>
         <div class="documents-section">
             <h2>All documents</h2>
             <p>Overview of every document that you have stored</p>
@@ -44,49 +48,102 @@
         </div>
     </div>
     <script>
-        document.getElementById('upload-icon').addEventListener('click', function() {
-            document.getElementById('file-upload').click();
-        });
+        $(document).ready(function() {
+            $('#upload-icon').click(function() {
+                $('#file-upload').click();
+            });
 
-        document.getElementById('file-upload').addEventListener('change', function(event) {
-            const files = event.target.files;
-            const formData = new FormData();
-            for (let i = 0; i < files.length; i++) {
-                formData.append('files', files[i]);
+            $('#file-upload').change(function(event) {
+                const files = event.target.files;
+                const fileNames = [];
+                for (let i = 0; i < files.length; i++) {
+                    fileNames.push(files[i].name);
+                }
+                $('#selected-files').text(fileNames.join(', '));
+                $('#upload-button').show();
+            });
+
+            $('#upload-button').click(function() {
+                const files = $('#file-upload')[0].files;
+                if (files.length === 0) {
+                    showFlashMessage('No files selected for upload.', 'error');
+                    return;
+                }
+
+                const formData = new FormData();
+                for (let i = 0; i < files.length; i++) {
+                    formData.append('files', files[i]);
+                }
+
+                $.ajax({
+                    url: '/upload_files',
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function(response) {
+                        if (response.status === 'exists') {
+                            if (confirm(response.message)) {
+                                uploadFile(files[0], true);
+                            }
+                        } else {
+                            showFlashMessage(response.message, 'success');
+                            loadDocuments();
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        showFlashMessage('An error occurred while uploading the files.', 'error');
+                    }
+                });
+            });
+
+            function uploadFile(file, update = false) {
+                const formData = new FormData();
+                formData.append('file', file);
+
+                $.ajax({
+                    url: update ? '/update_file' : '/upload_files',
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function(response) {
+                        showFlashMessage(response.message, 'success');
+                        loadDocuments();
+                    },
+                    error: function(xhr, status, error) {
+                        showFlashMessage('An error occurred while uploading the file.', 'error');
+                    }
+                });
             }
-            fetch('/upload_files', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                alert(data.message);
-                loadDocuments();
-            })
-            .catch(error => console.error('Error:', error));
-        });
 
-        function loadDocuments() {
-            fetch('/api/documents')
-                .then(response => response.json())
-                .then(data => {
-                    const tableBody = document.getElementById('document-table-body');
-                    tableBody.innerHTML = '';
-                    data.forEach(doc => {
-                        const row = document.createElement('tr');
-                        row.innerHTML = `
-                            <td>${doc.name}</td>
-                            <td>${doc.date_uploaded}</td>
-                            <td>${doc.last_updated}</td>
-                            <td>${doc.owner}</td>
-                        `;
-                        tableBody.appendChild(row);
+            function showFlashMessage(message, type) {
+                const flashMessageDiv = $('<div>').addClass('flash-message ' + type).text(message);
+                $('#flash-messages').append(flashMessageDiv);
+                setTimeout(function() {
+                    flashMessageDiv.fadeOut(function() {
+                        $(this).remove();
                     });
-                })
-                .catch(error => console.error('Error:', error));
-        }
+                }, 5000);
+            }
 
-        document.addEventListener('DOMContentLoaded', loadDocuments);
+            function loadDocuments() {
+                $.get('/api/documents', function(data) {
+                    const tableBody = $('#document-table-body');
+                    tableBody.empty();
+                    data.forEach(doc => {
+                        const row = $('<tr>');
+                        row.append($('<td>').text(doc['Document Name']));
+                        row.append($('<td>').text(doc['Date Uploaded']));
+                        row.append($('<td>').text(doc['Last Updated']));
+                        row.append($('<td>').text(doc['Owner']));
+                        tableBody.append(row);
+                    });
+                });
+            }
+
+            loadDocuments();
+        });
     </script>
 </body>
 </html>
