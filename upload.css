@@ -40,12 +40,14 @@ body {
     padding: 20px;
     background-color: #e0e0e0;
     border-radius: 10px;
+    text-align: center;
 }
 
 .upload-icon {
     font-size: 50px;
     color: rgba(0, 71, 123, 1);
     margin-bottom: 10px;
+    cursor: pointer;
 }
 
 .upload-section h2 {
@@ -55,10 +57,6 @@ body {
 .upload-section p {
     color: grey;
     margin-bottom: 20px;
-}
-
-.upload-section input[type="file"] {
-    margin-top: 10px;
 }
 
 .documents-section {
