@@ -4,63 +4,45 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Upload Files</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='upload.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&display=swap">
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='upload.css') }}">
 </head>
 <body>
-<div class="header">
-    <h5>My Application</h5>
-</div>
-<a href="{{ url_for('home') }}" class="menu-link">
-    <i class="fas fa-arrow-left"></i> Main Menu
-</a>
-<div class="container">
-    <div class="upload-section">
-        <i class="fas fa-folder-upload fa-5x"></i>
-        <h2>Upload your files</h2>
-        <p>Drag and drop your files or choose files</p>
-        <form id="upload-form" action="{{ url_for('upload_file') }}" method="post" enctype="multipart/form-data">
-            <input type="file" name="file">
-            <button type="submit">Upload</button>
-        </form>
+    <div class="header">
+        <h5>My Application</h5>
     </div>
-    <div class="documents-section">
-        <h2>All documents</h2>
-        <p>Overview of every document that you have stored</p>
-        <div class="table-container" id="table-container">
-            {{ tables|safe }}
+    <a href="{{ url_for('home') }}" class="menu-link">
+        <i class="fas fa-arrow-left"></i> Main Menu
+    </a>
+    <div class="container">
+        <div class="upload-section">
+            <div class="upload-icon">
+                <i class="fas fa-folder-upload"></i>
+            </div>
+            <h2>Upload your files</h2>
+            <p>Drag and drop your files or choose files</p>
+            <input type="file" id="file-upload" multiple>
+        </div>
+        <div class="documents-section">
+            <h2>All documents</h2>
+            <p>Overview of every document that you have stored</p>
+            <div class="table-container">
+                <table class="data">
+                    <thead>
+                        <tr>
+                            <th>Document Name</th>
+                            <th>Date Uploaded</th>
+                            <th>Last Updated</th>
+                            <th>Owner</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Rows will be populated here -->
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
-</div>
-
-<script>
-$(document).ready(function() {
-    $('#upload-form').on('submit', function(event) {
-        event.preventDefault();
-        var formData = new FormData(this);
-        
-        $.ajax({
-            url: $(this).attr('action'),
-            type: 'POST',
-            data: formData,
-            contentType: false,
-            processData: false,
-            success: function(response) {
-                // Display success message
-                alert(response.message);
-
-                // Update the table
-                $('#table-container').html(response.table);
-            },
-            error: function(xhr, status, error) {
-                // Display error message
-                alert('File upload failed: ' + error);
-            }
-        });
-    });
-});
-</script>
+    <script src="{{ url_for('static', filename='scripts.js') }}"></script>
 </body>
 </html>
