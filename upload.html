@@ -59,127 +59,129 @@
     </div>
 
     <script>
-        $(document).ready(function() {
-            let selectedFile = null;
+    $(document).ready(function() {
+        let selectedFile = null;
 
-            $('#upload-icon').click(function() {
-                $('#file-upload').click();
-            });
+        $('#upload-icon').click(function() {
+            $('#file-upload').click();
+        });
 
-            $('#file-upload').change(function(event) {
-                const files = event.target.files;
-                if (files.length > 0) {
-                    selectedFile = files[0];
-                    $('#selected-files').text(selectedFile.name);
-                    $('#upload-button').show();
-                }
-            });
+        $('#file-upload').change(function(event) {
+            const files = event.target.files;
+            if (files.length > 0) {
+                selectedFile = files[0];
+                $('#selected-files').text(selectedFile.name);
+                $('#upload-button').show();
+            }
+        });
 
-            $('#upload-button').click(function() {
-                if (!selectedFile) {
-                    showFlashMessage('No files selected for upload.', 'error');
-                    return;
-                }
+        $('#upload-button').click(function() {
+            if (!selectedFile) {
+                showFlashMessage('No files selected for upload.', 'error');
+                return;
+            }
 
-                const formData = new FormData();
-                formData.append('files', selectedFile);
+            const formData = new FormData();
+            formData.append('files', selectedFile);
 
-                // Show loader
-                $('#loader').show();
-                $('#upload-button').hide();
+            // Show loader
+            $('#loader').show();
+            $('#upload-button').hide();
 
-                $.ajax({
-                    url: '/upload_files',
-                    type: 'POST',
-                    data: formData,
-                    processData: false,
-                    contentType: false,
-                    success: function(response) {
-                        if (response.status === 'exists') {
-                            $('#confirmation-message').text(response.message);
-                            $('#confirmation-modal').show();
-                        } else {
-                            showFlashMessage(response.message, 'success');
-                            resetUploadSection();
-                            loadDocuments();
-                        }
-                        $('#loader').hide();
-                    },
-                    error: function(xhr, status, error) {
-                        showFlashMessage('An error occurred while uploading the file.', 'error');
-                        $('#loader').hide();
-                    }
-                });
-            });
-
-            $('#confirm-upload').click(function() {
-                uploadFile(selectedFile, true);
-                $('#confirmation-modal').hide();
-            });
-
-            $('#cancel-upload').click(function() {
-                $('#confirmation-modal').hide();
-            });
-
-            function uploadFile(file, update = false) {
-                const formData = new FormData();
-                formData.append('file', file);
-
-                // Show loader
-                $('#loader').show();
-
-                $.ajax({
-                    url: update ? '/update_file' : '/upload_files',
-                    type: 'POST',
-                    data: formData,
-                    processData: false,
-                    contentType: false,
-                    success: function(response) {
+            $.ajax({
+                url: '/upload_files',
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    if (response.status === 'exists') {
+                        $('#confirmation-message').text(response.message);
+                        $('#confirmation-modal').show();
+                    } else {
                         showFlashMessage(response.message, 'success');
                         resetUploadSection();
                         loadDocuments();
-                        $('#loader').hide();
-                    },
-                    error: function(xhr, status, error) {
-                        showFlashMessage('An error occurred while uploading the file.', 'error');
-                        $('#loader').hide();
                     }
-                });
-            }
-
-            function resetUploadSection() {
-                $('#selected-files').empty();
-                $('#upload-button').hide();
-                selectedFile = null;
-            }
-
-            function showFlashMessage(message, type) {
-                const flashMessageDiv = $('<div>').addClass('flash-message ' + type).text(message);
-                $('#flash-messages').append(flashMessageDiv);
-                setTimeout(function() {
-                    flashMessageDiv.fadeOut(function() {
-                        $(this).remove();
-                    });
-                }, 5000);
-            }
-
-            function loadDocuments() {
-                $.get('/api/documents', function(data) {
-                    const tableBody = $('#document-table-body');
-                    tableBody.empty();
-                    data.forEach(doc => {
-                        const row = $('<tr>');
-                        row.append($('<td>').text(doc['Document Name']));
-                        row.append($('<td>').text(doc['Date Uploaded']));
-                        row.append($('<td>').text(doc['Last Updated']));
-                        row.append($('<td>').text(doc['Owner']));
-                        tableBody.append(row);
-                    });
-                });
-            }
-
-            loadDocuments();
+                    $('#loader').hide();
+                },
+                error: function(xhr, status, error) {
+                    showFlashMessage('An error occurred while uploading the file.', 'error');
+                    $('#loader').hide();
+                }
+            });
         });
-    </script>
+
+        $('#confirm-upload').click(function() {
+            uploadFile(selectedFile, true);
+            $('#confirmation-modal').hide();
+        });
+
+        $('#cancel-upload').click(function() {
+            $('#confirmation-modal').hide();
+            resetUploadSection(); // Reset upload section on cancel
+        });
+
+        function uploadFile(file, update = false) {
+            const formData = new FormData();
+            formData.append('file', file);
+
+            // Show loader
+            $('#loader').show();
+
+            $.ajax({
+                url: update ? '/update_file' : '/upload_files',
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    showFlashMessage(response.message, 'success');
+                    resetUploadSection();
+                    loadDocuments();
+                    $('#loader').hide();
+                },
+                error: function(xhr, status, error) {
+                    showFlashMessage('An error occurred while uploading the file.', 'error');
+                    $('#loader').hide();
+                }
+            });
+        }
+
+        function resetUploadSection() {
+            $('#selected-files').empty();
+            $('#upload-button').hide();
+            selectedFile = null;
+        }
+
+        function showFlashMessage(message, type) {
+            const flashMessageDiv = $('<div>').addClass('flash-message ' + type).text(message);
+            $('#flash-messages').append(flashMessageDiv);
+            setTimeout(function() {
+                flashMessageDiv.fadeOut(function() {
+                    $(this).remove();
+                });
+            }, 5000);
+        }
+
+        function loadDocuments() {
+            $.get('/api/documents', function(data) {
+                const tableBody = $('#document-table-body');
+                tableBody.empty();
+                data.forEach(doc => {
+                    const row = $('<tr>');
+                    row.append($('<td>').text(doc['Document Name']));
+                    row.append($('<td>').text(doc['Date Uploaded']));
+                    row.append($('<td>').text(doc['Last Updated']));
+                    row.append($('<td>').text(doc['Owner']));
+                    tableBody.append(row);
+                });
+            });
+        }
+
+        loadDocuments();
+    });
+</script>
+
 </body>
 </html>
