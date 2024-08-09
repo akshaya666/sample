@@ -1,99 +1,48 @@
-from flask import Flask, render_template, request, jsonify
-import boto3
-import csv
-from io import StringIO
-from datetime import datetime
+<div class="table-container">
+    <table class="data">
+        <thead>
+            <tr>
+                <th>Document Name</th>
+                <th>Date Uploaded</th>
+                <th>Last Updated</th>
+                <th>Owner</th>
+            </tr>
+        </thead>
+    </table>
+    <div class="table-body">
+        <table class="data">
+            <tbody id="document-table-body">
+                <!-- Rows will be populated here -->
+            </tbody>
+        </table>
+    </div>
+</div>
 
-app = Flask(__name__)
-app.secret_key = 'supersecretkey'
+.table-container {
+    max-height: 400px; /* Set a fixed height for the table container */
+    border: 1px solid rgba(0, 71, 123, 0.2); /* Optional: add a border around the table container */
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Optional: add a shadow for better visibility */
+    overflow: hidden; /* Hide overflow to contain scrolling */
+}
 
-# Configuration
-S3_BUCKET = 'your-s3-bucket-name'
-CSV_FILE = 'documents.csv'
-s3_client = boto3.client('s3')
+.table-body {
+    max-height: 350px; /* Adjust as needed */
+    overflow-y: auto; /* Enable vertical scrolling */
+}
 
-@app.route('/')
-def home():
-    return render_template('index.html')
+.table-body::-webkit-scrollbar {
+    width: 8px; /* Width of the scrollbar */
+}
 
-@app.route('/upload')
-def upload():
-    return render_template('upload.html')
+.table-body::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 71, 123, 0.8); /* Color of the scrollbar thumb */
+    border-radius: 4px; /* Roundness of the scrollbar thumb */
+}
 
-@app.route('/upload_files', methods=['POST'])
-def upload_files():
-    files = request.files.getlist('files')
-    response_message = []
-    for file in files:
-        filename = file.filename
-        file_content = file.read()
+.table-body::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(0, 71, 123, 1); /* Color of the scrollbar thumb when hovered */
+}
 
-        # Check if document exists in CSV
-        try:
-            csv_content = s3_client.get_object(Bucket=S3_BUCKET, Key=CSV_FILE)['Body'].read().decode('utf-8')
-            csv_reader = list(csv.DictReader(StringIO(csv_content)))
-        except Exception as e:
-            csv_reader = []
-
-        document_exists = any(row['Document Name'] == filename for row in csv_reader)
-
-        if document_exists:
-            return jsonify({'message': f'{filename} already exists. Do you want to update it?', 'status': 'exists'}), 409
-
-        # Upload file to S3
-        s3_client.put_object(Bucket=S3_BUCKET, Key=f'documents/{filename}', Body=file_content)
-
-        # Add new entry to CSV
-        csv_reader.append({
-            'Document Name': filename,
-            'Date Uploaded': datetime.now().strftime('%Y-%m-%d'),
-            'Last Updated': datetime.now().strftime('%Y-%m-%d'),
-            'Owner': 'User'
-        })
-
-        # Write updated CSV back to S3
-        csv_content = StringIO()
-        csv_writer = csv.DictWriter(csv_content, fieldnames=['Document Name', 'Date Uploaded', 'Last Updated', 'Owner'])
-        csv_writer.writeheader()
-        csv_writer.writerows(csv_reader)
-        s3_client.put_object(Bucket=S3_BUCKET, Key=CSV_FILE, Body=csv_content.getvalue())
-        response_message.append(f'{filename} uploaded successfully.')
-
-    return jsonify({'message': ' '.join(response_message), 'status': 'success'})
-
-@app.route('/update_file', methods=['POST'])
-def update_file():
-    file = request.files['file']
-    filename = file.filename
-    file_content = file.read()
-
-    # Upload file to S3
-    s3_client.put_object(Bucket=S3_BUCKET, Key=f'documents/{filename}', Body=file_content)
-
-    # Update entry in CSV
-    csv_content = s3_client.get_object(Bucket=S3_BUCKET, Key=CSV_FILE)['Body'].read().decode('utf-8')
-    csv_reader = list(csv.DictReader(StringIO(csv_content)))
-
-    for row in csv_reader:
-        if row['Document Name'] == filename:
-            row['Last Updated'] = datetime.now().strftime('%Y-%m-%d')
-            break
-
-    # Write updated CSV back to S3
-    csv_content = StringIO()
-    csv_writer = csv.DictWriter(csv_content, fieldnames=['Document Name', 'Date Uploaded', 'Last Updated', 'Owner'])
-    csv_writer.writeheader()
-    csv_writer.writerows(csv_reader)
-    s3_client.put_object(Bucket=S3_BUCKET, Key=CSV_FILE, Body=csv_content.getvalue())
-
-    return jsonify({'message': f'{filename} updated successfully.', 'status': 'success'})
-
-@app.route('/api/documents')
-def get_documents():
-    csv_content = s3_client.get_object(Bucket=S3_BUCKET, Key=CSV_FILE)['Body'].read().decode('utf-8')
-    csv_reader = csv.DictReader(StringIO(csv_content))
-    documents = [row for row in csv_reader]
-    return jsonify(documents)
-
-if __name__ == '__main__':
-    app.run(debug=True)
+.table-body::-webkit-scrollbar-track {
+    background-color: #f3f3f3; /* Color of the scrollbar track */
+}
