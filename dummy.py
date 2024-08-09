@@ -82,4 +82,18 @@ def update_file():
     # Write updated CSV back to S3
     csv_content = StringIO()
     csv_writer = csv.DictWriter(csv_content, fieldnames=['Document Name', 'Date Uploaded', 'Last Updated', 'Owner'])
-   
+    csv_writer.writeheader()
+    csv_writer.writerows(csv_reader)
+    s3_client.put_object(Bucket=S3_BUCKET, Key=CSV_FILE, Body=csv_content.getvalue())
+
+    return jsonify({'message': f'{filename} updated successfully.', 'status': 'success'})
+
+@app.route('/api/documents')
+def get_documents():
+    csv_content = s3_client.get_object(Bucket=S3_BUCKET, Key=CSV_FILE)['Body'].read().decode('utf-8')
+    csv_reader = csv.DictReader(StringIO(csv_content))
+    documents = [row for row in csv_reader]
+    return jsonify(documents)
+
+if __name__ == '__main__':
+    app.run(debug=True)
