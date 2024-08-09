@@ -13,3 +13,4 @@
 .menu-link i {
     margin-right: 5px;
 }
+    file_list = [item['Key'] for item in response['Contents'] if item['Key'] != folder_name]
