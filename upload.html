@@ -25,6 +25,7 @@
             <input type="file" id="file-upload" multiple style="display: none;">
             <div id="selected-files"></div>
             <button id="upload-button" style="display: none;">Upload</button>
+            <div id="loader" class="loader" style="display: none;"></div>
         </div>
         <div id="flash-messages"></div>
         <div class="documents-section">
@@ -83,6 +84,10 @@
                 const formData = new FormData();
                 formData.append('files', selectedFile);
 
+                // Show loader
+                $('#loader').show();
+                $('#upload-button').hide();
+
                 $.ajax({
                     url: '/upload_files',
                     type: 'POST',
@@ -98,9 +103,11 @@
                             resetUploadSection();
                             loadDocuments();
                         }
+                        $('#loader').hide();
                     },
                     error: function(xhr, status, error) {
                         showFlashMessage('An error occurred while uploading the file.', 'error');
+                        $('#loader').hide();
                     }
                 });
             });
@@ -118,6 +125,9 @@
                 const formData = new FormData();
                 formData.append('file', file);
 
+                // Show loader
+                $('#loader').show();
+
                 $.ajax({
                     url: update ? '/update_file' : '/upload_files',
                     type: 'POST',
@@ -128,9 +138,11 @@
                         showFlashMessage(response.message, 'success');
                         resetUploadSection();
                         loadDocuments();
+                        $('#loader').hide();
                     },
                     error: function(xhr, status, error) {
                         showFlashMessage('An error occurred while uploading the file.', 'error');
+                        $('#loader').hide();
                     }
                 });
             }
