@@ -47,33 +47,41 @@
             </div>
         </div>
     </div>
+
+    <!-- Confirmation Modal -->
+    <div id="confirmation-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <p id="confirmation-message"></p>
+            <button id="confirm-upload">Yes, update</button>
+            <button id="cancel-upload">No, cancel</button>
+        </div>
+    </div>
+
     <script>
         $(document).ready(function() {
+            let selectedFile = null;
+
             $('#upload-icon').click(function() {
                 $('#file-upload').click();
             });
 
             $('#file-upload').change(function(event) {
                 const files = event.target.files;
-                const fileNames = [];
-                for (let i = 0; i < files.length; i++) {
-                    fileNames.push(files[i].name);
+                if (files.length > 0) {
+                    selectedFile = files[0];
+                    $('#selected-files').text(selectedFile.name);
+                    $('#upload-button').show();
                 }
-                $('#selected-files').text(fileNames.join(', '));
-                $('#upload-button').show();
             });
 
             $('#upload-button').click(function() {
-                const files = $('#file-upload')[0].files;
-                if (files.length === 0) {
+                if (!selectedFile) {
                     showFlashMessage('No files selected for upload.', 'error');
                     return;
                 }
 
                 const formData = new FormData();
-                for (let i = 0; i < files.length; i++) {
-                    formData.append('files', files[i]);
-                }
+                formData.append('files', selectedFile);
 
                 $.ajax({
                     url: '/upload_files',
@@ -83,18 +91,27 @@
                     contentType: false,
                     success: function(response) {
                         if (response.status === 'exists') {
-                            if (confirm(response.message)) {
-                                uploadFile(files[0], true);
-                            }
+                            $('#confirmation-message').text(response.message);
+                            $('#confirmation-modal').show();
                         } else {
                             showFlashMessage(response.message, 'success');
+                            resetUploadSection();
                             loadDocuments();
                         }
                     },
                     error: function(xhr, status, error) {
-                        showFlashMessage('An error occurred while uploading the files.', 'error');
+                        showFlashMessage('An error occurred while uploading the file.', 'error');
                     }
                 });
+            });
+
+            $('#confirm-upload').click(function() {
+                uploadFile(selectedFile, true);
+                $('#confirmation-modal').hide();
+            });
+
+            $('#cancel-upload').click(function() {
+                $('#confirmation-modal').hide();
             });
 
             function uploadFile(file, update = false) {
@@ -109,12 +126,19 @@
                     contentType: false,
                     success: function(response) {
                         showFlashMessage(response.message, 'success');
+                        resetUploadSection();
                         loadDocuments();
                     },
                     error: function(xhr, status, error) {
                         showFlashMessage('An error occurred while uploading the file.', 'error');
                     }
                 });
+            }
+
+            function resetUploadSection() {
+                $('#selected-files').empty();
+                $('#upload-button').hide();
+                selectedFile = null;
             }
 
             function showFlashMessage(message, type) {
