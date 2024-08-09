@@ -1,34 +1,93 @@
-/* Custom Scrollbar Styling for Chat Window */
-.chat-box {
-    flex: 1;
-    background-color: white;
-    border-radius: 10px;
-    padding: 10px;
-    overflow-y: auto;
-    border: 1px solid rgba(0, 71, 123, 1);
-    margin-bottom: 10px;
-    max-height: calc(100vh - 200px);
+<div class="table-container">
+    <div id="table-loader" class="table-loader">
+        <div class="dot-loader"><div></div><div></div><div></div></div>
+        <p>Loading data...</p>
+    </div>
+    <table class="data">
+        <thead>
+            <tr>
+                <th>Document Name</th>
+                <th>Date Uploaded</th>
+                <th>Last Updated</th>
+                <th>Owner</th>
+            </tr>
+        </thead>
+        <tbody id="document-table-body">
+            <!-- Rows will be populated here -->
+        </tbody>
+    </table>
+</div>
+
+function loadDocuments() {
+    const tableLoader = $('#table-loader');
+    tableLoader.show(); // Show loader when loading starts
+
+    $.get('/api/documents', function(data) {
+        const tableBody = $('#document-table-body');
+        tableBody.empty();
+        data.forEach(doc => {
+            const row = $('<tr>');
+            row.append($('<td>').text(doc['Document Name']));
+            row.append($('<td>').text(doc['Date Uploaded']));
+            row.append($('<td>').text(doc['Last Updated']));
+            row.append($('<td>').text(doc['Owner']));
+            tableBody.append(row);
+        });
+    }).always(function() {
+        tableLoader.hide(); // Hide loader when loading ends
+    });
+}
+
+.table-loader {
     display: flex;
     flex-direction: column;
-    scrollbar-width: thin; /* For Firefox */
-    scrollbar-color: rgba(0, 71, 123, 1) #f3f3f3; /* Thumb and track colors for Firefox */
+    justify-content: center;
+    align-items: center;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 0.8);
+    z-index: 10;
 }
 
-.chat-box::-webkit-scrollbar {
-    width: 8px; /* Width of the scrollbar */
+.dot-loader {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 40px;
+    height: 24px;
+    margin-bottom: 10px;
 }
 
-.chat-box::-webkit-scrollbar-thumb {
-    background-color: rgba(0, 71, 123, 1); /* Color of the scrollbar thumb */
-    border-radius: 4px; /* Roundness of the scrollbar thumb */
-    border: 2px solid #f3f3f3; /* Padding around the thumb for better aesthetics */
+.dot-loader div {
+    width: 8px;
+    height: 8px;
+    background-color: rgba(0, 71, 123, 1);
+    border-radius: 50%;
+    margin: 0 2px;
+    animation: dot-loader 1.4s infinite ease-in-out both;
 }
 
-.chat-box::-webkit-scrollbar-thumb:hover {
-    background-color: rgba(0, 71, 123, 0.8); /* Darken the thumb on hover */
+.dot-loader div:nth-child(1) {
+    animation-delay: -0.32s;
 }
 
-.chat-box::-webkit-scrollbar-track {
-    background-color: #f3f3f3; /* Color of the scrollbar track */
-    border-radius: 4px; /* Roundness of the scrollbar track */
+.dot-loader div:nth-child(2) {
+    animation-delay: -0.16s;
+}
+
+@keyframes dot-loader {
+    0%, 80%, 100% {
+        transform: scale(0);
+    }
+    40% {
+        transform: scale(1);
+    }
+}
+
+.table-loader p {
+    font-size: 16px;
+    color: rgba(0, 71, 123, 1);
 }
