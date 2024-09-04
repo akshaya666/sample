@@ -1,17 +1,13 @@
-<button id="stop-generating" style="display: none;">Stop Generating</button>
-
-
 let abortController = null;
 
 function fetchBotResponse(message) {
-    // Create a new AbortController for each new request
     abortController = new AbortController();
     const { signal } = abortController;
 
     // Show the stop button
     document.getElementById('stop-generating').style.display = 'inline-block';
 
-    appendMessage('bot', '', false, true); // Show loader
+    appendLoader(); // Show loader
 
     fetch('/api/chat', {
         method: 'POST',
@@ -23,23 +19,17 @@ function fetchBotResponse(message) {
     })
     .then(response => response.json())
     .then(data => {
-        // Remove loader and stop button
-        const lastBotMessage = document.querySelector('.message.bot:last-child');
-        if (lastBotMessage && lastBotMessage.innerHTML.includes('dot-loader')) {
-            lastBotMessage.remove();
-        }
+        removeLoader();  // Remove loader
         appendMessage('bot', data.message);
         document.getElementById('stop-generating').style.display = 'none';
         enableFeedback();
     })
     .catch(error => {
-        if (error.name === 'AbortError') {
-            appendMessage('bot', 'Response generation stopped.');
-        } else {
+        removeLoader();  // Always remove the loader in case of error or abort
+        if (error.name !== 'AbortError') {
             appendMessage('bot', 'An error occurred.');
         }
         document.getElementById('stop-generating').style.display = 'none';
-        console.error('Error:', error);
     });
 }
 
@@ -48,24 +38,24 @@ document.getElementById('stop-generating').addEventListener('click', function() 
     if (abortController) {
         abortController.abort();  // Cancel the fetch request
         document.getElementById('stop-generating').style.display = 'none';  // Hide the button
+        removeLoader();  // Immediately remove the loader
     }
 });
 
-
-
-#stop-generating {
-    background-color: rgba(0, 71, 123, 1);
-    color: white;
-    border: none;
-    padding: 10px;
-    font-size: 14px;
-    border-radius: 5px;
-    cursor: pointer;
-    margin-bottom: 10px;
-    display: none;  /* Initially hidden */
+function appendLoader() {
+    // Show loader (bot typing animation)
+    const loaderElem = document.createElement('div');
+    loaderElem.className = 'message bot';
+    loaderElem.id = 'loader';
+    loaderElem.innerHTML = '<div class="dot-loader"><div></div><div></div><div></div></div>';
+    chatBox.appendChild(loaderElem);
+    chatBox.scrollTop = chatBox.scrollHeight;
 }
 
-#stop-generating:hover {
-    background-color: rgba(0, 71, 123, 0.8);
+function removeLoader() {
+    // Remove loader (bot typing animation)
+    const loaderElem = document.getElementById('loader');
+    if (loaderElem) {
+        loaderElem.remove();
+    }
 }
-
