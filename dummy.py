@@ -1,93 +1,71 @@
-<div class="table-container">
-    <div id="table-loader" class="table-loader">
-        <div class="dot-loader"><div></div><div></div><div></div></div>
-        <p>Loading data...</p>
-    </div>
-    <table class="data">
-        <thead>
-            <tr>
-                <th>Document Name</th>
-                <th>Date Uploaded</th>
-                <th>Last Updated</th>
-                <th>Owner</th>
-            </tr>
-        </thead>
-        <tbody id="document-table-body">
-            <!-- Rows will be populated here -->
-        </tbody>
-    </table>
-</div>
+from flask import Flask, render_template, request, redirect, url_for, jsonify, flash
+import boto3
+import os
+import csv
 
-function loadDocuments() {
-    const tableLoader = $('#table-loader');
-    tableLoader.show(); // Show loader when loading starts
+app = Flask(__name__)
+app.secret_key = 'your_secret_key'  # Needed for flash messages
 
-    $.get('/api/documents', function(data) {
-        const tableBody = $('#document-table-body');
-        tableBody.empty();
-        data.forEach(doc => {
-            const row = $('<tr>');
-            row.append($('<td>').text(doc['Document Name']));
-            row.append($('<td>').text(doc['Date Uploaded']));
-            row.append($('<td>').text(doc['Last Updated']));
-            row.append($('<td>').text(doc['Owner']));
-            tableBody.append(row);
-        });
-    }).always(function() {
-        tableLoader.hide(); // Hide loader when loading ends
-    });
-}
+# Initialize S3 client
+s3 = boto3.client('s3')
+BUCKET_NAME = 'your-bucket-name'
 
-.table-loader {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(255, 255, 255, 0.8);
-    z-index: 10;
-}
+# Placeholder for local knowledge base (in a real app, this would be a database or stored on S3)
+knowledge_bases = ["Knowledgebase 1", "Knowledgebase 2"]
 
-.dot-loader {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 40px;
-    height: 24px;
-    margin-bottom: 10px;
-}
 
-.dot-loader div {
-    width: 8px;
-    height: 8px;
-    background-color: rgba(0, 71, 123, 1);
-    border-radius: 50%;
-    margin: 0 2px;
-    animation: dot-loader 1.4s infinite ease-in-out both;
-}
+@app.route('/')
+def home():
+    return render_template('index.html')
 
-.dot-loader div:nth-child(1) {
-    animation-delay: -0.32s;
-}
 
-.dot-loader div:nth-child(2) {
-    animation-delay: -0.16s;
-}
+@app.route('/manage_knowledgebase', methods=['GET', 'POST'])
+def manage_knowledgebase():
+    if request.method == 'POST':
+        # Create a new knowledge base (in a real app, you'd store this in a DB or S3)
+        new_knowledgebase = request.form.get('knowledgebase_name')
+        if new_knowledgebase:
+            knowledge_bases.append(new_knowledgebase)
+            flash(f'Knowledgebase "{new_knowledgebase}" created successfully!', 'success')
+        else:
+            flash('Please enter a valid knowledgebase name.', 'error')
+        return redirect(url_for('manage_knowledgebase'))
 
-@keyframes dot-loader {
-    0%, 80%, 100% {
-        transform: scale(0);
-    }
-    40% {
-        transform: scale(1);
-    }
-}
+    # Render the knowledge base management page
+    return render_template('manage_knowledgebase.html', knowledge_bases=knowledge_bases)
 
-.table-loader p {
-    font-size: 16px;
-    color: rgba(0, 71, 123, 1);
-}
+
+@app.route('/upload', methods=['GET', 'POST'])
+def upload():
+    knowledgebase = request.args.get('knowledgebase')
+    if request.method == 'POST':
+        file = request.files['file']
+        if file:
+            file_key = f"{knowledgebase}/{file.filename}"
+            s3.upload_fileobj(file, BUCKET_NAME, file_key)
+            flash(f'File "{file.filename}" uploaded successfully to {knowledgebase}!', 'success')
+            return redirect(url_for('upload', knowledgebase=knowledgebase))
+
+    return render_template('upload.html', knowledgebase=knowledgebase)
+
+
+@app.route('/api/documents', methods=['GET'])
+def get_documents():
+    # Example: Fetch a list of documents from S3 (assuming CSV is stored in S3)
+    documents = []
+    try:
+        # Use boto3 to fetch the CSV file that holds the document information
+        response = s3.get_object(Bucket=BUCKET_NAME, Key='knowledge_base/documents.csv')
+        content = response['Body'].read().decode('utf-8')
+        csv_reader = csv.DictReader(content.splitlines())
+        for row in csv_reader:
+            documents.append(row)
+    except Exception as e:
+        print(f"Error fetching documents: {e}")
+
+    return jsonify(documents)
+
+
+if __name__ == '__main__':
+    app.run(debug=True)
+
