@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Manage Knowledgebase</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body>
@@ -14,20 +14,27 @@
     </div>
 
     <!-- Flash Message Container -->
-    <div id="flash-message" class="flash-message"></div>
+    <div id="flash-message">
+        {% with messages = get_flashed_messages(with_categories=True) %}
+            {% if messages %}
+                <div class="flash-messages">
+                    {% for category, message in messages %}
+                        <div class="flash-message {{ category }}">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+    </div>
 
     <div class="container">
         <!-- Knowledgebase Cards -->
         <div class="knowledgebase-grid" id="knowledgebase-grid">
-            <div class="knowledgebase-card" onclick="openUploadPage('knowledgebase1')">
-                <h3>Knowledgebase 1</h3>
-                <button class="edit-btn" onclick="openUploadPage('knowledgebase1')">edit</button>
-            </div>
-
-            <div class="knowledgebase-card" onclick="openUploadPage('knowledgebase2')">
-                <h3>Knowledgebase 2</h3>
-                <button class="edit-btn" onclick="openUploadPage('knowledgebase2')">edit</button>
-            </div>
+            {% for knowledgebase in knowledge_bases %}
+                <div class="knowledgebase-card" onclick="openUploadPage('{{ knowledgebase }}')">
+                    <h3>{{ knowledgebase }}</h3>
+                    <button class="edit-btn" onclick="openUploadPage('{{ knowledgebase }}')">edit</button>
+                </div>
+            {% endfor %}
         </div>
 
         <!-- Add Knowledgebase Button -->
@@ -41,16 +48,17 @@
     <!-- Add Knowledgebase Popup -->
     <div id="add-knowledgebase-popup" style="display: none;">
         <div class="popup-content">
-            <h3>Add New Knowledgebase</h3>
-            <input type="text" id="new-knowledgebase-name" placeholder="Enter Knowledgebase Name">
-            <button onclick="createKnowledgebase()">Create</button>
-            <button onclick="closePopup()">Cancel</button>
+            <form method="POST" action="{{ url_for('manage_knowledgebase') }}">
+                <h3>Add New Knowledgebase</h3>
+                <input type="text" id="new-knowledgebase-name" name="knowledgebase_name" placeholder="Enter Knowledgebase Name">
+                <button type="submit">Create</button>
+                <button type="button" onclick="closePopup()">Cancel</button>
+            </form>
         </div>
     </div>
 
     <script>
         function openUploadPage(knowledgebaseName) {
-            // Redirect to upload page with the selected knowledgebase
             window.location.href = `/upload?knowledgebase=${knowledgebaseName}`;
         }
 
@@ -60,43 +68,6 @@
 
         function closePopup() {
             document.getElementById('add-knowledgebase-popup').style.display = 'none';
-        }
-
-        function createKnowledgebase() {
-            const newKnowledgebaseName = document.getElementById('new-knowledgebase-name').value;
-            if (newKnowledgebaseName) {
-                // Close the popup
-                closePopup();
-
-                // Show flash message
-                showFlashMessage('Knowledgebase created: ' + newKnowledgebaseName, 'success');
-
-                // Add new knowledgebase card dynamically
-                const knowledgebaseGrid = document.getElementById('knowledgebase-grid');
-                const newCard = document.createElement('div');
-                newCard.className = 'knowledgebase-card';
-                newCard.innerHTML = `
-                    <h3>${newKnowledgebaseName}</h3>
-                    <button class="edit-btn" onclick="openUploadPage('${newKnowledgebaseName}')">edit</button>
-                `;
-                newCard.onclick = function() {
-                    openUploadPage(newKnowledgebaseName);
-                };
-                knowledgebaseGrid.appendChild(newCard);
-            } else {
-                showFlashMessage('Please enter a knowledgebase name', 'error');
-            }
-        }
-
-        function showFlashMessage(message, type) {
-            const flashMessageDiv = document.getElementById('flash-message');
-            flashMessageDiv.textContent = message;
-            flashMessageDiv.className = `flash-message ${type}`;
-            flashMessageDiv.style.display = 'block';
-
-            setTimeout(function() {
-                flashMessageDiv.style.display = 'none';
-            }, 5000); // Hide after 5 seconds
         }
     </script>
 </body>
